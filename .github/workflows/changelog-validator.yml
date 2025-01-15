@@ -69,9 +69,9 @@ jobs:
             formatted_files = formatted_files.replace('<li></li>','');
 
             if (result_error == 1) {
-              body+= `🚨 <strong>[Error]</strong> Changelog files need to be updated.\n\n<h2>Missing updates</h2>${formatted_files}`;
+              body+= `🚨 Changelog files need to be updated.\n\n<h2>Missing updates</h2>${formatted_files}`;
             } else {
-              body+= `✅ <strong>[Success]</strong> All changelog files have been updated.`;
+              body+= `✅ All changelog files have been updated.`;
             }
 
             if (botComment) {
