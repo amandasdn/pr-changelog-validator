@@ -1,0 +1,99 @@
+name: Validate Changelog
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  changelog-validator-job:
+    permissions:
+      pull-requests: write
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Find src modified in projects
+        id: find_projects
+        run: |
+          MODIFIED_PROJECTS=$(git diff --name-only HEAD^ HEAD | grep -oE '^project-[^/]+/src/' | sed 's#/src/.*##' | sort -u)
+          echo "projects=$(echo "$MODIFIED_PROJECTS" | tr '\n' ' ')" >> $GITHUB_OUTPUT
+          echo "$MODIFIED_PROJECTS"
+
+      - name: Validate changelog
+        id: validate_changelog
+        run: |
+          ERROR=0
+          MISSING_FILES=""
+          for project in ${{ steps.find_projects.outputs.projects }}; do
+            project=$(echo "$project" | sed 's/\///g')
+
+            if ! git diff --name-only HEAD^ HEAD | grep -q "$project/docs/CHANGELOG.md"; then
+              MISSING_FILES+="$project"
+              MISSING_FILES+="/docs/CHANGELOG.md\n"
+              ERROR=1
+            fi
+          done
+
+          echo "::set-output name=result_error::$ERROR"
+
+          if [ $ERROR -eq 1 ]; then
+            echo -e "[Error] Changelog files need to be updated.\n\nMissing updates:\n$MISSING_FILES"
+            echo "::set-output name=missing_files::$MISSING_FILES"
+          else
+            echo "[Success] All changelog files have been updated."
+          fi
+
+      - name: Add or update comment on PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number
+            });
+
+            const JOB_TITLE = `Changelog Validator`;
+            const botComment = comments.find(comment => comment.body.includes(JOB_TITLE));
+            body = `<h1>${JOB_TITLE}</h1>`;
+
+            const missing_files = '${{ steps.validate_changelog.outputs.missing_files }}';
+            const result_error = '${{ steps.validate_changelog.outputs.result_error }}';
+            
+            let formatted_files = missing_files.replace(/\n/g, '</li><li>');
+            formatted_files = `<ul><li>${formatted_files}</li></ul>`;
+            formatted_files = formatted_files.replace('<li></li>','');
+
+            if (result_error == 1) {
+              body+= `<div>🚨 Changelog files need to be updated.</div>\n<h2>Missing updates</h2>${formatted_files}`;
+            } else {
+              body+= `<div>✅ All changelog files have been updated.</div>`;
+            }
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: body
+              });
+            }
+
+      - name: Run validation result and handle error
+        run: |
+          if [ "${{ steps.validate.outputs.result_error }}" -eq 1 ]; then
+            echo "[Error] Changelog validator failed."
+            exit 1
+          fi
+        shell: bash
