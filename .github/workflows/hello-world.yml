@@ -1,0 +1,16 @@
+name: Check Changelog Update
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  version-check-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Print Hello World
+        run: echo "Hello, World! This is a test of GitHub Actions."
+
