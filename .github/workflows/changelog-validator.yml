@@ -59,7 +59,7 @@ jobs:
 
             const JOB_TITLE = `Changelog Validator`;
             const botComment = comments.find(comment => comment.body.includes(JOB_TITLE));
-            body = `<h1>${JOB_TITLE}</h1>`;
+            body = `<h1>${JOB_TITLE}</h1>\n`;
 
             const missing_files = '${{ steps.validate_changelog.outputs.missing_files }}';
             const result_error = '${{ steps.validate_changelog.outputs.result_error }}';
