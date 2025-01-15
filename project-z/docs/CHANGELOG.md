@@ -4,4 +4,3 @@
 
 ### Added
 - Initial Python script that prints "Hello, World!".
-#
