@@ -6,6 +6,9 @@ on:
 
 jobs:
   changelog-validator-job:
+    permissions:
+      pull-requests: write
+      issues: write
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
