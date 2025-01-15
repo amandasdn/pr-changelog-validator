@@ -10,9 +10,10 @@ This repository uses GitHub Actions to check if the `CHANGELOG.md` files of proj
 
 ## Example output
 
-### When changelog files were updated:
+### When changelog files were updated
 The PR comment will show:
 ![image](https://github.com/user-attachments/assets/a7d86b93-4328-4d8d-85f5-8739402fb693)
 
 ### When changelog files were not modified in the last commit
+The PR comment will be edited and show:
 ![image](https://github.com/user-attachments/assets/c371ea50-3b24-4a4c-ae7e-ca5545ab9f2a)
