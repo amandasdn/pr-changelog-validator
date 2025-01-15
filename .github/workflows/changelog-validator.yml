@@ -59,7 +59,7 @@ jobs:
 
             const JOB_TITLE = `Changelog Validator`;
             const botComment = comments.find(comment => comment.body.includes(JOB_TITLE));
-            body = `<h1>${JOB_TITLE}</h1>\n`;
+            body = `<h1>${JOB_TITLE}</h1>`;
 
             const missing_files = '${{ steps.validate_changelog.outputs.missing_files }}';
             const result_error = '${{ steps.validate_changelog.outputs.result_error }}';
@@ -69,9 +69,9 @@ jobs:
             formatted_files = formatted_files.replace('<li></li>','');
 
             if (result_error == 1) {
-              body+= `🚨 Changelog files need to be updated.\n\n<h2>Missing updates</h2>${formatted_files}`;
+              body+= `<div>🚨 Changelog files need to be updated.</div>\n<h2>Missing updates</h2>${formatted_files}`;
             } else {
-              body+= `✅ All changelog files have been updated.`;
+              body+= `<div>✅ All changelog files have been updated.</div>`;
             }
 
             if (botComment) {
